@@ -221,8 +221,23 @@ max-width:var(–col);margin:0 auto;
 /* ══════════════════════════════════════
 WORKOUT MODAL
 ══════════════════════════════════════ */
-#wm{display:none;position:fixed;inset:0;z-index:300;background:var(–bg);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#wm{
+display:none;position:fixed;inset:0;
+z-index:9000;
+background:var(–bg);
+overflow:hidden;
+-webkit-transform:translateZ(0);transform:translateZ(0);
+will-change:transform;
+isolation:isolate;
+}
 #wm.on{display:block;}
+.wm-scroll{
+position:absolute;inset:0;
+overflow-y:auto;
+-webkit-overflow-scrolling:touch;
+overscroll-behavior-y:contain;
+padding-bottom:40px;
+}
 .wm-hd{position:sticky;top:0;z-index:10;background:rgba(24,22,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(–s3);padding:calc(var(–top) - 8px) var(–pad) 12px;}
 body.light .wm-hd{background:rgba(245,242,238,.97);}
 .wm-hd-in{max-width:var(–col);margin:0 auto;}
@@ -627,21 +642,23 @@ body.light .chat-bottom{background:rgba(245,242,238,.97);}
 <!-- WORKOUT MODAL -->
 
 <div id="wm">
-  <div class="wm-hd"><div class="wm-hd-in">
-    <div class="wm-r1">
-      <button class="btn sm ghost" onclick="endWk()">End</button>
-      <div class="wm-name" id="wm-name"></div>
-      <div class="wm-ctr" id="wm-ctr">0 / 0</div>
+  <div class="wm-scroll">
+    <div class="wm-hd"><div class="wm-hd-in">
+      <div class="wm-r1">
+        <button class="btn sm ghost" onclick="endWk()">End</button>
+        <div class="wm-name" id="wm-name"></div>
+        <div class="wm-ctr" id="wm-ctr">0 / 0</div>
+      </div>
+      <div class="wm-r2">
+        <span class="wm-time" id="wm-time">00:00</span>
+        <div class="wm-track"><div class="wm-fill" id="wm-fill" style="width:0%"></div></div>
+      </div>
+    </div></div>
+    <div class="wm-body" id="wm-body"></div>
+    <div class="wm-note-area">
+      <label class="fl-l">Session note (optional)</label>
+      <textarea class="inp" id="wm-note" placeholder="How did it feel? Any PRs?"></textarea>
     </div>
-    <div class="wm-r2">
-      <span class="wm-time" id="wm-time">00:00</span>
-      <div class="wm-track"><div class="wm-fill" id="wm-fill" style="width:0%"></div></div>
-    </div>
-  </div></div>
-  <div class="wm-body" id="wm-body"></div>
-  <div class="wm-note-area">
-    <label class="fl-l">Session note (optional)</label>
-    <textarea class="inp" id="wm-note" placeholder="How did it feel? Any PRs?"></textarea>
   </div>
 </div>
 
