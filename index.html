@@ -12,6 +12,12 @@
 <meta name="apple-mobile-web-app-title" content="FORGE"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="format-detection" content="telephone=no"/>
+<!-- Splash screen background for iOS -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<style>
+  /* Prevents white flash on iOS PWA launch */
+  html{background:#181614;}
+</style>
 <!-- Inline touch icon (base64 SVG) so iOS home screen icon looks good -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23181614' rx='40'/%3E%3Ctext x='90' y='122' font-family='serif' font-size='88' font-weight='700' text-anchor='middle' fill='%23f0ede8'%3EF%3C/text%3E%3C/svg%3E"/>
 <title>FORGE</title>
@@ -37,14 +43,13 @@ body.light #theme-color-meta{content:'#f5f2ee';}
 
 /* ─── RESET ─── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-/* KEY FIX: use 100dvh so iOS Safari nav bar doesn’t cause overflow */
-html{height:100%;height:100dvh;overscroll-behavior:none;overflow:hidden;}
+html{height:100%;overscroll-behavior-x:none;}
 body{
-width:100%;height:100%;height:100dvh;
-overflow:hidden;position:fixed;/* prevents rubber-band overscroll on pages */
+min-height:100%;
 background:var(–bg);color:var(–t1);font-family:var(–sf);
 font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;
 transition:background .25s,color .25s;
+overflow-x:hidden;
 }
 button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit;}
 input,select,textarea{font-family:inherit;outline:none;background:none;color:var(–t1);-webkit-appearance:none;}
@@ -52,19 +57,19 @@ input::placeholder,textarea::placeholder{color:var(–t3);}
 ::-webkit-scrollbar{display:none;}
 *{-webkit-overflow-scrolling:touch;}
 
-/* ─── APP SHELL ─── */
-/* Pages scroll inside a fixed shell, so the shell itself never overflows */
-#shell{
-position:fixed;inset:0;
-padding-bottom:calc(var(–nav) + var(–bot));
-overflow:hidden;
+/* ─── NO SHELL ─── */
+/* Pages stack naturally. body scrolls. Fixed overlays (modal/rest/complete)
+are document-level so iOS Safari composites them correctly above everything. */
+body{
+overflow-x:hidden;
+/* Remove position:fixed from body - let it scroll normally */
+position:static;
+height:auto;
 }
 .pg{
 display:none;
-height:100%;
-overflow-y:auto;
--webkit-overflow-scrolling:touch;
-overscroll-behavior-y:contain;
+min-height:100dvh;
+padding-bottom:calc(var(–nav) + var(–bot) + 8px);
 }
 .pg.on{display:block;}
 
@@ -153,7 +158,7 @@ hr.div{border:none;border-top:1px solid var(–s3);}
 .lw{max-width:var(–col);margin:0 auto;}
 
 /* ─── SHEET ─── */
-.bk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center;}
+.bk{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1300;align-items:flex-end;justify-content:center;}
 .bk.on{display:flex;}
 .sh{width:100%;max-width:var(–col);background:var(–s1);border-top:1px solid var(–s4);padding:20px var(–pad) calc(28px + var(–bot));max-height:90dvh;overflow-y:auto;}
 .sh-nob{width:28px;height:2px;background:var(–s3);margin:0 auto 20px;}
@@ -165,7 +170,7 @@ position:fixed;bottom:calc(var(–nav) + var(–bot) + 14px);left:50%;
 transform:translateX(-50%) translateY(8px);
 background:var(–t2);color:var(–bg);
 font-family:var(–m);font-size:10px;letter-spacing:.08em;
-padding:10px 18px;z-index:999;opacity:0;pointer-events:none;
+padding:10px 18px;z-index:9999;opacity:0;pointer-events:none;
 transition:all .2s;white-space:nowrap;border-radius:var(–r);
 }
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -221,24 +226,22 @@ max-width:var(–col);margin:0 auto;
 /* ══════════════════════════════════════
 WORKOUT MODAL
 ══════════════════════════════════════ */
+/* With no parent stacking context, position:fixed works correctly on iOS */
 #wm{
-display:none;position:fixed;inset:0;
-z-index:9000;
+display:none;
+position:fixed;
+top:0;left:0;right:0;bottom:0;
+z-index:1000;
 background:var(–bg);
-overflow:hidden;
--webkit-transform:translateZ(0);transform:translateZ(0);
-will-change:transform;
-isolation:isolate;
-}
-#wm.on{display:block;}
-.wm-scroll{
-position:absolute;inset:0;
-overflow-y:auto;
+overflow-y:scroll;
 -webkit-overflow-scrolling:touch;
 overscroll-behavior-y:contain;
-padding-bottom:40px;
+-webkit-transform:translate3d(0,0,0);
+transform:translate3d(0,0,0);
 }
-.wm-hd{position:sticky;top:0;z-index:10;background:rgba(24,22,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(–s3);padding:calc(var(–top) - 8px) var(–pad) 12px;}
+#wm.on{display:block;}
+.wm-scroll{/* passthrough wrapper */}
+.wm-hd{position:sticky;top:0;z-index:10;background:var(–bg);border-bottom:1px solid var(–s3);padding:calc(var(–top) - 8px) var(–pad) 12px;}
 body.light .wm-hd{background:rgba(245,242,238,.97);}
 .wm-hd-in{max-width:var(–col);margin:0 auto;}
 .wm-r1{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
@@ -271,7 +274,7 @@ body.light .wm-hd{background:rgba(245,242,238,.97);}
 /* ══════════════════════════════════════
 REST
 ══════════════════════════════════════ */
-#rest{display:none;position:fixed;inset:0;z-index:400;background:var(–s1);flex-direction:column;align-items:center;justify-content:center;}
+#rest{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:1100;background:var(–s1);flex-direction:column;align-items:center;justify-content:center;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);}
 #rest.on{display:flex;}
 .r-lbl{font-family:var(–m);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(–t3);margin-bottom:24px;}
 .r-num{font-family:var(–m);font-size:100px;font-weight:300;letter-spacing:-.06em;color:var(–t1);line-height:1;}
@@ -287,7 +290,7 @@ REST
 /* ══════════════════════════════════════
 COMPLETE
 ══════════════════════════════════════ */
-#wdone{display:none;position:fixed;inset:0;z-index:500;background:var(–bg);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;}
+#wdone{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:1200;background:var(–bg);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);}
 #wdone.on{display:flex;}
 .wd-lbl{font-family:var(–m);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(–t3);margin-bottom:14px;}
 .wd-big{font-family:var(–m);font-size:60px;font-weight:300;letter-spacing:-.04em;line-height:.9;margin-bottom:28px;color:var(–t1);}
@@ -426,8 +429,6 @@ body.light .chat-bottom{background:rgba(245,242,238,.97);}
 
 </head>
 <body>
-
-<div id="shell">
 
 <!-- TODAY -->
 
@@ -636,8 +637,6 @@ body.light .chat-bottom{background:rgba(245,242,238,.97);}
     </div>
   </div>
 </div>
-
-</div><!-- /shell -->
 
 <!-- WORKOUT MODAL -->
 
@@ -1119,6 +1118,26 @@ function selTP(p,el){document.querySelectorAll('#train-tabs .ptab').forEach(b=>b
 // WORKOUT
 // ════════════════════════════════════
 let AW=null,wS=0,wTick=null,sDone=0,sTot=0,curEx=0,SS=[];
+
+// Scroll lock — prevents background page showing through modal on iOS
+let _scrollY=0;
+function lockScroll(){
+  _scrollY=window.scrollY;
+  document.body.style.position='fixed';
+  document.body.style.top=-_scrollY+'px';
+  document.body.style.left='0';
+  document.body.style.right='0';
+  document.body.style.overflow='hidden';
+}
+function unlockScroll(){
+  document.body.style.position='';
+  document.body.style.top='';
+  document.body.style.left='';
+  document.body.style.right='';
+  document.body.style.overflow='';
+  window.scrollTo(0,_scrollY);
+}
+
 function startWk(wk,phase){
   haptic('medium');
   AW={...wk,phase};wS=Date.now();sDone=0;curEx=0;
@@ -1129,7 +1148,10 @@ function startWk(wk,phase){
   document.getElementById('wm-fill').style.width='0%';
   document.getElementById('wm-note').value='';
   buildEx();
+  lockScroll();
   document.getElementById('wm').classList.add('on');
+  // Scroll modal to top
+  document.getElementById('wm').scrollTop=0;
   clearInterval(wTick);
   wTick=setInterval(()=>{const e=Math.floor((Date.now()-wS)/1000);document.getElementById('wm-time').textContent=`${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;},1000);
 }
@@ -1191,9 +1213,16 @@ function saveWk(){
   window._pendingPBs=[];
   document.getElementById('wdone').classList.remove('on');
   document.getElementById('wm').classList.remove('on');
+  unlockScroll();
   clearInterval(wTick);skipRest();toast('Saved');initToday();
 }
-function endWk(){if(confirm('End workout? Progress won\'t be saved.')){document.getElementById('wm').classList.remove('on');clearInterval(wTick);skipRest();}}
+function endWk(){
+  if(confirm('End workout? Progress won\'t be saved.')){
+    document.getElementById('wm').classList.remove('on');
+    unlockScroll();
+    clearInterval(wTick);skipRest();
+  }
+}
 
 // ════════════════════════════════════
 // REST TIMER
